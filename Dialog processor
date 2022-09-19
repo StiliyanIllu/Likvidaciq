@@ -1,0 +1,307 @@
+using Draw.src.Model;
+using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.IO;
+using System.Runtime.Serialization;
+using System.Runtime.Serialization.Formatters.Binary;
+using System.Windows.Forms;
+
+namespace Draw
+{
+    
+    public class DialogProcessor : DisplayProcessor
+    {
+        #region Constructor
+
+        public DialogProcessor()
+        {
+        }
+
+        #endregion
+
+        #region Properties
+
+        private List<Shape> selection = new List<Shape>();
+        public List<Shape> Selection
+        {
+            get { return selection; }
+            set { selection = value; }
+        }
+
+        
+        private bool isDragging;
+        public bool IsDragging
+        {
+            get { return isDragging; }
+            set { isDragging = value; }
+        }
+
+        
+        private PointF lastLocation;
+        public PointF LastLocation
+        {
+            get { return lastLocation; }
+            set { lastLocation = value; }
+        }
+
+        #endregion
+
+        
+        public Color borderColor = Color.Black;
+        public void AddRandomRectangle()
+        {
+            Random rnd = new Random();
+            int x = rnd.Next(100, 1000);
+            int y = rnd.Next(100, 600);
+
+            RectangleShape rect = new RectangleShape(new Rectangle(x, y, 100, 200));
+            rect.FillColor = Color.White;
+            rect.BorderColor = borderColor;
+
+            ShapeList.Add(rect);
+        }
+
+        public void AddRandomEllipse()
+        {
+            Random rnd = new Random();
+            int x = rnd.Next(100, 1000);
+            int y = rnd.Next(100, 600);
+
+            EllipseShape ellipse = new EllipseShape(new Rectangle(x, y, 100, 200));
+            ellipse.FillColor = Color.White;
+            ellipse.BorderColor = borderColor;
+
+            ShapeList.Add(ellipse);
+        }
+
+        public void AddRandomCircle()
+        {
+            Random rnd = new Random();
+            int x = rnd.Next(100, 1000);
+            int y = rnd.Next(100, 600);
+
+            CircleShape circle = new CircleShape(new Rectangle(x, y, 200, 200));
+            circle.FillColor = Color.White;
+            circle.BorderColor = borderColor;
+
+            ShapeList.Add(circle);
+        }
+        public void AddRandomTriangle()
+        {
+            Random rnd = new Random();
+            int x = rnd.Next(100, 1000);
+            int y = rnd.Next(100, 600);
+
+            TriangleShape triangle = new TriangleShape(new Rectangle(x, y, 200, 200));
+            triangle.FillColor = Color.White;
+            triangle.BorderColor = borderColor;
+
+            ShapeList.Add(triangle);
+        }
+
+        public void AddRandomSquare()
+        {
+            Random rnd = new Random();
+            int x = rnd.Next(100, 1000);
+            int y = rnd.Next(100, 600);
+
+            SquareShape square = new SquareShape(new Rectangle(x, y, 200, 200));
+            square.FillColor = Color.White;
+            square.BorderColor = borderColor;
+
+            ShapeList.Add(square);
+        }
+
+        public void AddRandomCircle2()
+        {
+            Random rnd = new Random();
+            int x = rnd.Next(100, 1000);
+            int y = rnd.Next(100, 600);
+
+            Circle2Shape circle2 = new Circle2Shape(new Rectangle(x, y, 200, 200));
+            circle2.FillColor = Color.White;
+            circle2.BorderColor = borderColor;
+
+            ShapeList.Add(circle2);
+        }
+
+       
+
+        public Color color = Color.White;
+
+        public Shape ContainsPoint(PointF point)
+        {
+            for (int i = ShapeList.Count - 1; i >= 0; i--)
+            {
+                if (ShapeList[i].Contains(point))
+                {
+                    ShapeList[i].FillColor = color;
+
+                    return ShapeList[i];
+                }
+            }
+            return null;
+        }
+
+        
+        public void TranslateTo(PointF p)
+        {
+            if (selection != null)
+            {
+                foreach (var shape in selection)
+                {
+                    var type = shape.GetType().Name.ToString();
+                    if (type.Equals("GroupShape"))
+                    {
+                        shape.MoveGroupedShape(new PointF(p.X - lastLocation.X, p.Y - lastLocation.Y));
+                    }
+                    else
+                    {
+                        shape.Location = new PointF(shape.Location.X + p.X - lastLocation.X, shape.Location.Y + p.Y - lastLocation.Y);
+
+                    }
+                    //selection.Location = new PointF(selection.Location.X + p.X - lastLocation.X, selection.Location.Y + p.Y - lastLocation.Y);
+                }
+                lastLocation = p;
+            }
+        }
+
+        
+        public void RotateShape(float rotateAngle)
+        {
+            if (Selection.Count != 0)
+            {
+                foreach (var shape in Selection)
+                {
+                    shape.RotateAngle = rotateAngle;
+                }
+            }
+        }
+
+        
+        public void DeleteSelectedShapes()
+        {
+            foreach (Shape shape in Selection)
+            {
+                ShapeList.Remove(shape);
+            }
+            Selection.Clear();
+        }
+
+        
+        public void CopySelectedShapes()
+        {
+            CopiedShapeList.Clear();
+            foreach (Shape shape in Selection)
+            {
+                CopiedShapeList.Add(shape);
+
+            }
+        }
+
+        //paste selected shapes
+        public void PasteSelectedShapes()
+        {
+
+            foreach (Shape shape in CopiedShapeList)
+            {
+                var type = shape.GetType().Name.ToString();
+                if (type.Equals("RectangleShape"))
+                {
+                    AddRandomRectangle();
+                }
+                else if (type.Equals("EllipseShape"))
+                {
+                    AddRandomEllipse();
+                }
+            }
+
+        }
+
+        //save method
+        public void SerializeFile(object drawingShape, string path = null)
+        {
+
+            Stream stream;
+            IFormatter binaryFormatter = new BinaryFormatter();
+            if (path == null)
+            {
+                stream = new FileStream("MyDrawingFile.jpg", FileMode.Create, FileAccess.Write, FileShare.None);
+            }
+            else
+            {
+                string preparePath = path + ".jpg";
+                stream = new FileStream(preparePath, FileMode.Create);
+
+            }
+            binaryFormatter.Serialize(stream, drawingShape);
+            stream.Close();
+        }
+
+
+        public object DeSerializeFile(string path = null)
+        {
+            object drawingShapes;
+
+            Stream stream;
+            IFormatter binaryFormatter = new BinaryFormatter();
+            if (path == null)
+            {
+                stream = new FileStream("MyDrawingFile.jpg", FileMode.Open);
+            }
+            else
+            {
+                stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.None);
+            }
+            drawingShapes = binaryFormatter.Deserialize(stream);
+            stream.Close();
+            return drawingShapes;
+        }
+
+        //group selected items
+        public void GroupSelectedShapes()
+        {
+            if (Selection.Count < 2)
+                return;
+
+            float minX = float.MaxValue;
+            float minY = float.MaxValue;
+            float maxX = float.MinValue;
+            float maxY = float.MinValue;
+
+            foreach (var shape in Selection)
+            {
+                if (maxX < shape.Location.X + shape.Width)
+                {
+                    maxX = shape.Location.X + shape.Width;
+                }
+                if (maxY < shape.Location.Y + shape.Height)
+                {
+                    maxY = shape.Location.Y + shape.Height;
+                }
+
+                if (minX > shape.Location.X)
+                {
+                    minX = shape.Location.X;
+                }
+                if (minY > shape.Location.Y)
+                {
+                    minY = shape.Location.Y;
+                }
+            }
+
+            var groupShape = new GroupShape(new RectangleF(minX, minY, maxX - minX, maxY - minY));
+            groupShape.SubShape = Selection;
+
+            ShapeList.Clear();
+
+            Selection = new List<Shape>();
+            ShapeList.Add(groupShape);
+            Selection.Add(groupShape);
+
+        }
+
+
+    }
+}
