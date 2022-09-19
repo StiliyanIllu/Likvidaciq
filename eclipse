@@ -23,13 +23,7 @@ namespace Draw.src.Model
 
         #endregion
 
-        /// <summary>
-        /// Проверка за принадлежност на точка point към правоъгълника.
-        /// В случая на правоъгълник този метод може да не бъде пренаписван, защото
-        /// Реализацията съвпада с тази на абстрактния клас Shape, който проверява
-        /// дали точката е в обхващащия правоъгълник на елемента (а той съвпада с
-        /// елемента в този случай).
-        /// </summary>
+        
         public override bool Contains(PointF point)
         {
             float centerX = this.Location.X + (this.Width / 2);
@@ -41,17 +35,11 @@ namespace Draw.src.Model
                 return false;
         }
 
-        /// <summary>
-        /// Частта, визуализираща конкретния примитив.
-        /// </summary>
+        
         public override void DrawSelf(Graphics grfx)
         {
             base.DrawSelf(grfx);
-            //var state = grfx.Save();
-            //Matrix m = grfx.Transform.Clone();
-            //m.Multiply(TransformationMatrix);
-
-            //grfx.Transform = m; 
+           
 
             base.RotateShape(grfx);
 
@@ -59,7 +47,7 @@ namespace Draw.src.Model
             grfx.DrawEllipse(new Pen(BorderColor), Rectangle.X, Rectangle.Y, Rectangle.Width, Rectangle.Height);
 
             grfx.ResetTransform();
-            //grfx.Restore(state);
+            
         }
     }
 }
